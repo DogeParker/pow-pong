@@ -39,6 +39,20 @@ public class BallMovement : MonoBehaviour
 
     // Update is called once per frame
     public float gravityMultiplier = 3f;
+    Vector3 CalculateArcVelocity(Transform target)
+    {
+        Vector3 flatDelta = target.position - transform.position;
+        flatDelta.y = 0f;
+        float distance = flatDelta.magnitude;
+
+        float g = Physics.gravity.magnitude * gravityMultiplier;
+        float vy = Mathf.Sqrt(2f * g * netClearHeight);
+        float timeUp = vy / g;
+        float totalTime = timeUp * 2f;
+        float horizontalSpeed = distance / totalTime;
+
+        return flatDelta.normalized * horizontalSpeed + Vector3.up * vy;
+    }
     void Update()
     {
         if (!isLaunched && Keyboard.current.spaceKey.wasPressedThisFrame)
@@ -65,10 +79,10 @@ public class BallMovement : MonoBehaviour
         Rigidbody rb = GetComponent<Rigidbody>();
         rb.isKinematic = false;
 
-        Vector3 launchDir = Quaternion.AngleAxis(-downwardAngle, transform.forward) * transform.right;
-        Vector3 velocity = launchDir.normalized * launchSpeed; 
-        velocity.y = launchHeight;
-        rb.linearVelocity = velocity;
+        Transform[] targets = { leftTarget, midTarget, rightTarget };
+        Transform chosen = targets[UnityEngine.Random.Range(0, targets.Length)];
+
+        rb.linearVelocity = CalculateArcVelocity(chosen);
     }
     void OnCollisionEnter(Collision collision)
     {
@@ -93,7 +107,7 @@ public class BallMovement : MonoBehaviour
             Vector3 aimPoint = target.position + Vector3.up * netClearHeight;
             Vector3 toTarget = (aimPoint - transform.position).normalized;
             Rigidbody rb = GetComponent<Rigidbody>();
-            rb.linearVelocity = toTarget * paddleBounceForce + Vector3.up * launchArc;
+            rb.linearVelocity = CalculateArcVelocity(target);
             Debug.Log($"Paddle hit. Target = {target}");
         }
     }
