@@ -23,12 +23,12 @@ public class Movement : MonoBehaviour
     void Update()
     {
         
-        if (Keyboard.current.rightArrowKey.isPressed && transform.position.z > -13 && speed > -maxSpeed) //13 is not pulled from anything specific, if a different value feels better then change it
+        if (Keyboard.current.rightArrowKey.isPressed && speed > -maxSpeed) //13 is not pulled from anything specific, if a different value feels better then change it
         {
             speed-=accelerationRate;
         }
 
-        else if (Keyboard.current.leftArrowKey.isPressed && transform.position.z < 13 && speed < maxSpeed)
+        else if (Keyboard.current.leftArrowKey.isPressed && speed < maxSpeed)
         {
             speed+=accelerationRate;
         }
@@ -49,7 +49,13 @@ public class Movement : MonoBehaviour
         forwardSpeed *= (float)friction;//slows down character fwd/bwd
         if (forwardSpeed < 0.01f && forwardSpeed > -0.01f) forwardSpeed = 0;
 
-        Vector3 movementVector = new Vector3(1f, 0f, 1f); // combine both axes
-        transform.position += new Vector3(forwardSpeed, 0f, speed) * Time.deltaTime;
+        Vector3 newPos = transform.position + new Vector3(forwardSpeed, 0f, speed) * Time.deltaTime;
+
+        if (newPos.z < -11f) { newPos.z = -11f; speed = 0f; }
+        if (newPos.z > 13f) { newPos.z = 13f; speed = 0f; }
+        if (newPos.x < -24f) { newPos.x = -24f; forwardSpeed = 0f; }
+        if (newPos.x > -19f) { newPos.x = -19f; forwardSpeed = 0f; }
+
+        transform.position = newPos;
     }
 }
